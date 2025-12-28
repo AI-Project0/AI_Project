@@ -389,7 +389,7 @@ export default function Home() {
             <div className="w-16 h-16 border-4 border-stone-dark/10 border-t-stone-dark rounded-full animate-spin"></div>
             <div className="text-center">
               <p className="text-2xl font-black text-stone-dark tracking-tighter">AI 拼命生成中...</p>
-              <p className="text-stone-dark/60 font-bold">稍等 1 分鐘，魔法即將發生</p>
+              <p className="text-stone-dark/60 font-bold">稍等 3~5 分鐘，魔法即將發生</p>
             </div>
           </div>
         </div>
