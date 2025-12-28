@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  /* 日系奶油風配色變數 */
+  --cream-bg: #faf9f6;
+  --cream-100: #f7f3e8;
+  --cream-200: #efe5d0;
+  --cream-300: #e3d0b0;
+  --cream-400: #d3b488;
+  --cream-text: #5c4d43;
+  /* Warm Brown Text */
+  --text-secondary: #8c7b70;
+}
+
+body {
+  background-color: var(--cream-bg);
+  color: var(--cream-text);
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang TC', 'Hiragino Sans GB', 'Microsoft JhengHei', Arial, sans-serif;
+}
+
+/* 自定義一些柔和的邊框和陰影 */
+.cream-card {
+  background-color: white;
+  border-radius: 1.5rem;
+  border: 1px solid var(--cream-200);
+  box-shadow: 0 4px 6px -1px rgba(211, 180, 136, 0.1), 0 2px 4px -1px rgba(211, 180, 136, 0.06);
+}
+
+.cream-button {
+  background-color: var(--cream-text);
+  color: #faf9f6;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.cream-button:hover {
+  background-color: #4a3e36;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(92, 77, 67, 0.15);
+}
+
+.cream-input {
+  border: 2px solid var(--cream-200);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: white;
+  outline: none;
+  transition: border-color 0.2s;
+  color: var(--cream-text);
+}
+
+.cream-input:focus {
+  border-color: var(--cream-400);
+}
+
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}

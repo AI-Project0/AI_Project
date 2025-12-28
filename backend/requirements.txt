@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+python-multipart
+torch
+torchvision
+diffusers
+transformers
+accelerate
+rembg
+opencv-python
+pillow
+mediapipe==0.10.9
+protobuf==3.20.3
+numpy
+controlnet_aux
+scipy
+onnxruntime
