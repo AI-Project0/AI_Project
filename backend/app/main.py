@@ -10,11 +10,13 @@ from app.core.ai_processor import AIProcessor
 
 app = FastAPI(title="Pro-ID Gen API", version="1.0.0")
 
-# CORS Setup
+# 修改 main.py 的 origins 部分
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "*"  # <--- 暫時加入這個，允許所有網址連線 (方便測試)
 ]
+# 或者更安全的寫法是之後把 Render 的前端網址加進來
 
 app.add_middleware(
     CORSMiddleware,
