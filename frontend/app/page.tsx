@@ -119,7 +119,9 @@ export default function Home() {
 
     const checkServerStatus = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/health');
+        // 優先讀取環境變數，如果沒有就用本地端 (方便你之後在自己電腦測試)
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const response = await fetch(`${API_URL}/health`);
         if (response.ok) {
           setIsServerReady(true);
           clearInterval(timer);
@@ -210,7 +212,9 @@ export default function Home() {
       formData.append("outfit_type", settings.outfitType);
 
       console.log("Calling backend...");
-      const response = await fetch('http://127.0.0.1:8000/generate', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      console.log("Calling backend at:", API_URL); // 方便除錯
+      const response = await fetch(`${API_URL}/generate`, {
         method: "POST",
         body: formData,
       });
