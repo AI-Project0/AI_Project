@@ -29,6 +29,13 @@ app.add_middleware(
 # Initialize AI Processor
 ai_processor = AIProcessor()
 
+# Standard ID photo sizes (width_mm, height_mm)
+size_map = {
+    "1inch": (28, 35),
+    "2inch_head": (35, 45),
+    "2inch_half": (42, 47)
+}
+
 @app.on_event("startup")
 async def startup_event():
     # Helper to preload models if needed, though they load lazily in current impl
@@ -55,26 +62,23 @@ async def generate_id_photo(
     - **outfit_type**: "original" (no inpaint), "suit_male", "suit_female".
     """
     
-    # Valdiate file
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image.")
+    # --- DEBUG LOGGING ---
+    print(f"--- Incoming Request to /generate ---")
+    print(f"File: {file.filename}, Content-Type: {file.content_type}")
+    print(f"Size ID: {size_id}")
+    print(f"BG Color: {bg_color}")
+    print(f"Outfit Type: {outfit_type}")
+    print(f"------------------------------------")
+    
+    # Validate file
+    if not file.content_type or not file.content_type.startswith("image/"):
+        msg = f"File must be an image. Received: {file.content_type}"
+        print(f"400 Error: {msg}")
+        raise HTTPException(status_code=400, detail=msg)
     
     image_bytes = await file.read()
     
-    # --- Logic Mapping ---
-    
     # 1. Size Logic (Crop Ratios)
-    # Passed to AIProcessor as (width_ratio, height_ratio) or specific identifier
-    # "1inch" -> 28:35
-    # "2inch_head" -> 35:45 (Standard)
-    # "2inch_half" -> 42:47 (?) - standard "2 inch half body" for some visa/resume?
-    # Let's map directly to target aspect ratio float w/h
-    
-    size_map = {
-        "1inch": (28, 35),
-        "2inch_head": (35, 45),
-        "2inch_half": (42, 47)
-    }
     target_ratio = size_map.get(size_id, (35, 45))
 
     # 2. Outfit Logic (Prompt Construction)
@@ -107,10 +111,34 @@ async def generate_id_photo(
         return Response(content=output_bytes, media_type="image/png")
         
     except ValueError as ve:
+        print(f"400 ValueError: {ve}")
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         print(f"Error during generation: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@app.post("/analyze-face")
+async def analyze_face(
+    file: UploadFile = File(...),
+    size_id: Literal["1inch", "2inch_head", "2inch_half"] = Form("2inch_head")
+):
+    """
+    Analyze the uploaded image and return a recommended crop box.
+    """
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image.")
+    
+    image_bytes = await file.read()
+    
+    target_ratio_tuple = size_map.get(size_id, (35, 45))
+    target_ratio_float = target_ratio_tuple[0] / target_ratio_tuple[1]
+    
+    result = ai_processor.analyze_face(image_bytes, target_ratio_float)
+    
+    if not result:
+        raise HTTPException(status_code=400, detail="No face detected or analysis failed.")
+        
+    return result
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

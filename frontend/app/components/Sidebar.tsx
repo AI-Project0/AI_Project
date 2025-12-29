@@ -170,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {isGenerating ? (
                     <>
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cream-text"></div>
-                        <span className="tracking-widest text-sm">稍等1分鐘...</span>
+                        <span className="tracking-widest text-xs opacity-60">處理中... (約 3-5 分鐘)</span>
                     </>
                 ) : (
                     <>

@@ -7,15 +7,28 @@ interface CropperProps {
     imageSrc: string;
     aspectRatio: number; // e.g., 35/45
     onCropComplete: (croppedAreaPixels: Area) => void;
+    initialCrop?: { x: number; y: number };
+    initialZoom?: number;
 }
 
 const CropperComponent: React.FC<CropperProps> = ({
     imageSrc,
     aspectRatio,
     onCropComplete,
+    initialCrop = { x: 0, y: 0 },
+    initialZoom = 1,
 }) => {
-    const [crop, setCrop] = useState({ x: 0, y: 0 });
-    const [zoom, setZoom] = useState(1);
+    const [crop, setCrop] = useState(initialCrop);
+    const [zoom, setZoom] = useState(initialZoom);
+
+    // Sync with initialCrop if it changes (e.g., after API response)
+    React.useEffect(() => {
+        if (initialCrop) setCrop(initialCrop);
+    }, [initialCrop]);
+
+    React.useEffect(() => {
+        if (initialZoom) setZoom(initialZoom);
+    }, [initialZoom]);
 
     const onCropChange = (crop: { x: number; y: number }) => {
         setCrop(crop);
@@ -43,7 +56,8 @@ const CropperComponent: React.FC<CropperProps> = ({
                 onCropComplete={handleCropComplete}
                 onZoomChange={onZoomChange}
                 style={{
-                    containerStyle: { background: "#1a1a1a" },
+                    containerStyle: { background: "#1a1a1a", width: "100%", height: "100%" },
+                    mediaStyle: { width: 'auto', height: '100%' }
                 }}
             />
         </div>

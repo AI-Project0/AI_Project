@@ -4,7 +4,7 @@ import React, { useState, useCallback } from "react";
 import Sidebar, { SizeId, BgColor, OutfitType } from "./components/Sidebar";
 import CropperComponent from "./components/CropperComponent";
 import { Area } from "react-easy-crop";
-import { Upload, Download, RefreshCcw, XCircle, FileArchive, Grid, User, X } from "lucide-react";
+import { Upload, Download, RefreshCcw, XCircle, FileArchive, Grid, User, X, AlertCircle } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -96,6 +96,9 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [recommendedCrop, setRecommendedCrop] = useState<{ x: number, y: number } | null>(null);
+  const [recommendedZoom, setRecommendedZoom] = useState<number>(1);
+  const [progress, setProgress] = useState(0);
 
   // Deployment Wake-up State
   const [isServerReady, setIsServerReady] = useState(false);
@@ -165,9 +168,45 @@ export default function Home() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const imageDataUrl = await readFile(file);
+      console.log('File Change - Setting imageSrc (length):', imageDataUrl.length);
       setImageSrc(imageDataUrl);
       setResultUrl(null);
       setResultBlob(null);
+
+      // Auto-analyze for Smart Crop
+      analyzeImage(file);
+    }
+  };
+
+  const analyzeImage = async (file: File) => {
+    console.log("Analyzing face for recommendation...");
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('size_id', settings.sizeId);
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${API_URL}/analyze-face`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json(); // {x: %, y: %, width: %, height: %}
+
+        // Convert recommendation (%) to react-easy-crop 'crop' state (translation from center)
+        const centerX = (data.x + data.width / 2) - 50;
+        const centerY = (data.y + data.height / 2) - 50;
+
+        // Zoom heuristic: fits the crop box into the view
+        const zoom = Math.max(1, 100 / Math.max(data.width, data.height) * 0.85);
+
+        setRecommendedCrop({ x: centerX, y: centerY });
+        setRecommendedZoom(zoom);
+        console.log("Smart Crop Applied:", { centerX, centerY, zoom });
+      }
+    } catch (err) {
+      console.error("Face analysis failed:", err);
     }
   };
 
@@ -185,9 +224,13 @@ export default function Home() {
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
       const imageDataUrl = await readFile(file);
+      console.log('Drop - Setting imageSrc (length):', imageDataUrl.length);
       setImageSrc(imageDataUrl);
       setResultUrl(null);
       setResultBlob(null);
+
+      // Auto-analyze for Smart Crop
+      analyzeImage(file);
     }
   };
 
@@ -202,6 +245,24 @@ export default function Home() {
     if (!imageSrc || !cropPixels) return;
 
     setIsGenerating(true);
+    setProgress(0);
+
+    // Simulated Progress logic: 0 to 90 over 30 seconds
+    const startTime = Date.now();
+    const duration = 30000; // 30 seconds to reach 90%
+
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < duration) {
+        // Ease-out curve: progress = 90 * (1 - (1 - t)^2)
+        const t = elapsed / duration;
+        const easedProgress = Math.floor(90 * (1 - Math.pow(1 - t, 2)));
+        setProgress(easedProgress);
+      } else {
+        // Hold at 99% until done
+        setProgress(99);
+      }
+    }, 200);
 
     try {
       const croppedBlob = await getCroppedImg(imageSrc, cropPixels);
@@ -219,18 +280,25 @@ export default function Home() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Generation failed");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Generation failed");
+      }
 
       const blob = await response.blob();
+      setProgress(100);
       setResultBlob(blob);
       const url = URL.createObjectURL(blob);
       setResultUrl(url);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to generate image. Ensure backend is running.");
+      alert(`Failed to generate image: ${error.message}`);
     } finally {
-      setIsGenerating(false);
+      clearInterval(progressInterval);
+      setTimeout(() => {
+        setIsGenerating(false);
+      }, 500); // Give time to see 100%
     }
   };
 
@@ -297,7 +365,7 @@ export default function Home() {
           {/* Result Overlay */}
           {resultUrl ? (
             <div className="relative flex flex-col items-center animate-fade-in gap-8 w-full max-w-2xl">
-              <h2 className="text-3xl font-bold tracking-tight text-stone-dark mb-2">✨ 生成結果 (Result)</h2>
+              <h2 className="text-3xl font-bold tracking-tight text-stone-dark mb-2">✨ 生成結果</h2>
               <div className="relative shadow-soft-xl rounded-3xl overflow-hidden border-4 border-white">
                 <img src={resultUrl} alt="Generated ID" className="h-[600px] object-contain bg-white" />
               </div>
@@ -321,7 +389,7 @@ export default function Home() {
             </div>
           ) : (
             /* WORKSPACE (Upload or Crop) */
-            <div className="w-full max-w-5xl h-[90%] relative flex flex-col">
+            <div className="w-full max-w-5xl flex-1 relative flex flex-col">
 
               {!imageSrc ? (
                 // Empty State: Upload
@@ -343,6 +411,22 @@ export default function Home() {
                     選擇照片 (Select Photo)
                     <input type="file" accept="image/*" className="hidden" onChange={onFileChange} />
                   </label>
+
+                  {/* Upload Guidelines Section */}
+                  <div className="mt-12 w-full max-w-xl bg-amber-50/50 border border-amber-100 rounded-[2rem] p-6 text-left shadow-sm">
+                    <div className="flex items-center gap-3 mb-4 text-amber-600">
+                      <AlertCircle className="w-5 h-5" />
+                      <h3 className="font-bold tracking-wide">拍攝規範提示</h3>
+                    </div>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-stone-dark/70 text-sm font-medium">
+                      <li className="flex items-center gap-2 bg-white/60 p-2 rounded-xl">👀 <span className="text-stone-dark font-bold">雙眼直視</span>：請直視鏡頭</li>
+                      <li className="flex items-center gap-2 bg-white/60 p-2 rounded-xl">👂 <span className="text-stone-dark font-bold">露出五官</span>：眉毛與耳朵完整露出</li>
+                      <li className="flex items-center gap-2 bg-amber-100/40 p-2 rounded-xl border border-amber-200/50 col-span-full">
+                        <span className="flex items-center gap-2">🚫 <span className="text-amber-700 font-black underline underline-offset-4">移除飾品 (最重要)</span>：請取下眼鏡、耳環、項鍊</span>
+                      </li>
+                      <li className="flex items-center gap-2 bg-white/60 p-2 rounded-xl">💡 <span className="text-stone-dark font-bold">光線充足</span>：避免臉部陰影</li>
+                    </ul>
+                  </div>
                 </div>
               ) : (
                 // Loaded State: Cropper
@@ -354,11 +438,14 @@ export default function Home() {
                     </button>
                   </div>
 
-                  <div className="flex-1 relative rounded-[32px] overflow-hidden shadow-soft-xl border-4 border-white bg-gray-900">
+                  <div className="flex-1 relative rounded-[32px] overflow-hidden shadow-soft-xl border-4 border-white bg-black h-[60vh] min-h-[400px] w-full">
+                    {(() => { console.log('Crop Image Source:', imageSrc); return null; })()}
                     <CropperComponent
                       imageSrc={imageSrc}
                       aspectRatio={getAspectRatio(settings.sizeId)}
                       onCropComplete={(pixels: any) => setCropPixels(pixels)}
+                      initialCrop={recommendedCrop || undefined}
+                      initialZoom={recommendedZoom}
                     />
                   </div>
                   <p className="text-center text-stone-dark/60 text-sm font-medium tracking-wide">
@@ -385,11 +472,39 @@ export default function Home() {
       {/* GENERATING OVERLAY */}
       {isGenerating && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center">
-          <div className="bg-white/80 backdrop-blur-xl px-12 py-8 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6 animate-bounce-slow border-2 border-cream-400">
-            <div className="w-16 h-16 border-4 border-stone-dark/10 border-t-stone-dark rounded-full animate-spin"></div>
+          <div className="bg-white/80 backdrop-blur-xl px-12 py-10 rounded-[3rem] shadow-2xl flex flex-col items-center gap-8 animate-fade-in border-2 border-cream-400">
+            {/* Circular Progress Bar */}
+            <div className="relative w-28 h-28">
+              <svg className="w-full h-full" viewBox="0 0 100 100">
+                {/* Background Track */}
+                <circle
+                  cx="50" cy="50" r="45"
+                  className="stroke-stone-dark/5"
+                  strokeWidth="8"
+                  fill="none"
+                />
+                {/* Progress Path */}
+                <circle
+                  cx="50" cy="50" r="45"
+                  className="stroke-[#4CAF50] transition-all duration-300 ease-out"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeLinecap="round"
+                  style={{
+                    strokeDasharray: 282.7,
+                    strokeDashoffset: 282.7 - (282.7 * progress) / 100,
+                  }}
+                />
+              </svg>
+              {/* Percentage Text */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl font-black text-stone-dark">{progress}%</span>
+              </div>
+            </div>
+
             <div className="text-center">
               <p className="text-2xl font-black text-stone-dark tracking-tighter">AI 拼命生成中...</p>
-              <p className="text-stone-dark/60 font-bold">稍等 3~5 分鐘，魔法即將發生</p>
+              <p className="text-stone-dark/40 font-bold text-sm">請稍待片刻，這通常需要 3~5 分鐘</p>
             </div>
           </div>
         </div>

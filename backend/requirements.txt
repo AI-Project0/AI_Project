@@ -16,7 +16,15 @@ transformers
 accelerate
 controlnet_aux
 
-# 強制下載 CPU 版本的 PyTorch (關鍵設定)
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
+# HD Restoration & Upscaling
+gfpgan
+realesrgan
+facexlib
+git+https://github.com/XPixelGroup/BasicSR.git
+kornia==0.6.9
+
+# CUDA-enabled PyTorch (Windows/cu121/v2.6+)
+--extra-index-url https://download.pytorch.org/whl/nightly/cu121
+torch>=2.6.0.dev20241229
 torchvision
+torchaudio
