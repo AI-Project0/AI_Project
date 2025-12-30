@@ -326,7 +326,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-row h-screen w-full bg-cream-50 overflow-hidden font-sans text-stone-dark relative">
+    <div className="flex flex-col lg:flex-row min-h-screen w-full bg-cream-50 font-sans text-stone-dark relative overflow-x-hidden">
 
       {/* WAKING UP OVERLAY */}
       {!isServerReady && (
@@ -357,19 +357,19 @@ export default function Home() {
       )}
 
       {/* Main Interaction Area with Anti-Fumble */}
-      <div className={`flex flex-row h-full w-full transition-all duration-500 ${isGenerating ? "opacity-30 pointer-events-none grayscale cursor-not-allowed select-none" : ""}`}>
+      <div className={`flex flex-col lg:flex-row min-h-full w-full transition-all duration-500 ${isGenerating ? "opacity-30 pointer-events-none grayscale cursor-not-allowed select-none" : ""}`}>
 
-        {/* LEFT PANEL (70%) */}
-        <div className="w-[70%] h-full relative p-12 flex flex-col items-center justify-center">
+        {/* LEFT PANEL (70% on desktop, 100% on mobile) */}
+        <div className="w-full lg:w-[70%] lg:min-h-screen relative p-6 md:p-12 flex flex-col items-center justify-center">
 
           {/* Result Overlay */}
           {resultUrl ? (
             <div className="relative flex flex-col items-center animate-fade-in gap-8 w-full max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight text-stone-dark mb-2">✨ 生成結果</h2>
-              <div className="relative shadow-soft-xl rounded-3xl overflow-hidden border-4 border-white">
-                <img src={resultUrl} alt="Generated ID" className="h-[600px] object-contain bg-white" />
+              <div className="relative shadow-soft-xl rounded-3xl overflow-hidden border-4 border-white w-full flex justify-center bg-white">
+                <img src={resultUrl} alt="Generated ID" className="max-h-[70vh] md:max-h-[600px] object-contain" />
               </div>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                 <button
                   onClick={() => setIsDownloadModalOpen(true)}
                   className="flex items-center gap-2 bg-stone-dark text-cream-50 px-8 py-4 rounded-3xl font-bold shadow-lg hover:bg-stone-500 transition-all active:scale-95"
@@ -438,7 +438,7 @@ export default function Home() {
                     </button>
                   </div>
 
-                  <div className="flex-1 relative rounded-[32px] overflow-hidden shadow-soft-xl border-4 border-white bg-black h-[60vh] min-h-[400px] w-full">
+                  <div className="flex-1 relative rounded-[32px] overflow-hidden shadow-soft-xl border-4 border-white bg-black h-[50vh] min-h-[350px] md:h-[60vh] md:min-h-[400px] w-full">
                     {(() => { console.log('Crop Image Source:', imageSrc); return null; })()}
                     <CropperComponent
                       imageSrc={imageSrc}
@@ -457,8 +457,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* RIGHT PANEL (30%) */}
-        <div className="w-[30%] h-full relative z-20">
+        {/* RIGHT PANEL (30% on desktop, 100% on mobile) */}
+        <div className="w-full lg:w-[30%] lg:h-screen lg:sticky lg:top-0 z-20">
           <Sidebar
             settings={settings}
             setSettings={setSettings}

@@ -43,25 +43,25 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
 
     return (
-        <div className="h-full w-full bg-cream-card p-8 shadow-soft-xl flex flex-col gap-8 rounded-l-[40px] border-l border-cream-border/50">
+        <div className="h-full w-full bg-cream-card p-6 md:p-8 shadow-soft-xl flex flex-col gap-6 md:gap-8 lg:rounded-l-[40px] border-l border-cream-border/50 overflow-y-auto">
 
             {/* Header - Clean & Minimalist */}
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 shrink-0">
                 <div className="bg-cream-accent p-3 rounded-2xl shadow-sm rotate-3">
                     <Wand2 className="text-cream-text w-6 h-6" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-cream-text tracking-tight">AI 智慧證件照</h1>
-                    <p className="text-xs text-cream-text-light font-medium tracking-widest uppercase">Pro ID Generator</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-cream-text tracking-tight">AI 智慧證件照</h1>
+                    <p className="text-[10px] md:text-xs text-cream-text-light font-medium tracking-widest uppercase">Pro ID Generator</p>
                 </div>
             </div>
 
             {/* Anti-Fumble Container */}
-            <div className={`flex-1 flex flex-col gap-8 transition-all duration-500 ${isGenerating ? "opacity-50 pointer-events-none grayscale cursor-not-allowed" : ""}`}>
+            <div className={`flex flex-col gap-6 md:gap-8 transition-all duration-500 shrink-0 ${isGenerating ? "opacity-50 pointer-events-none grayscale cursor-not-allowed" : ""}`}>
 
                 {/* Section 1: Size */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-cream-text-light uppercase tracking-wider flex items-center gap-2 ml-1">
+                    <h3 className="text-xs md:text-sm font-bold text-cream-text-light uppercase tracking-wider flex items-center gap-2 ml-1">
                         <Stamp className="w-4 h-4" /> 尺寸選擇 (Size)
                     </h3>
                     <div className="grid grid-cols-1 gap-3">
@@ -73,17 +73,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <button
                                 key={opt.id}
                                 onClick={() => updateSetting("sizeId", opt.id)}
-                                className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 border-2 text-left ${settings.sizeId === opt.id
+                                className={`flex items-center gap-4 p-3 md:p-4 rounded-2xl transition-all duration-300 border-2 text-left ${settings.sizeId === opt.id
                                     ? "bg-cream-accent border-cream-accent text-cream-text font-bold shadow-soft-md scale-[1.02]"
                                     : "bg-cream-bg border-cream-border text-cream-text hover:border-cream-accent hover:bg-white"
                                     }`}
                             >
                                 <div className="flex-1">
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="text-base">{opt.label}</span>
+                                        <span className="text-sm md:text-base">{opt.label}</span>
                                         <span className="text-[10px] opacity-60">{opt.desc}</span>
                                     </div>
-                                    <p className="text-xs font-medium opacity-70 leading-tight">{opt.usage}</p>
+                                    <p className="text-[10px] md:text-xs font-medium opacity-70 leading-tight">{opt.usage}</p>
                                 </div>
                                 {settings.sizeId === opt.id && <Check className="w-5 h-5 text-cream-text" />}
                             </button>
@@ -93,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Section 2: Background */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-cream-text-light uppercase tracking-wider flex items-center gap-2 ml-1">
+                    <h3 className="text-xs md:text-sm font-bold text-cream-text-light uppercase tracking-wider flex items-center gap-2 ml-1">
                         <div className="w-4 h-4 rounded-full border border-cream-text-light bg-white"></div> 背景顏色 (Background)
                     </h3>
                     <div className="flex flex-col gap-4">
@@ -106,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 <button
                                     key={opt.color}
                                     onClick={() => updateSetting("bgColor", opt.color)}
-                                    className={`w-14 h-14 rounded-full shadow-sm flex items-center justify-center transition-all duration-300 hover:scale-110 ${opt.ring
+                                    className={`w-12 h-12 md:w-14 md:h-14 rounded-full shadow-sm flex items-center justify-center transition-all duration-300 hover:scale-110 ${opt.ring
                                         } relative border-4 border-white ${settings.bgColor === opt.color ? 'scale-110 shadow-md' : 'opacity-80'}`}
                                     style={{ backgroundColor: opt.color }}
                                 >
@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             ))}
                         </div>
                         <div className="px-2">
-                            <p className="text-[11px] font-bold text-cream-text-light/80 italic">
+                            <p className="text-[10px] md:text-[11px] font-bold text-cream-text-light/80 italic">
                                 {settings.bgColor === "#FFFFFF" && "✓ 白色 (標準：身分證、護照)"}
                                 {settings.bgColor === "#4B89DC" && "✓ 藍色 (求職、識別證)"}
                                 {settings.bgColor === "#808080" && "✓ 灰色 (專業形象、形象照)"}
@@ -129,8 +129,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 {/* Section 3: Outfit */}
-                <div className="space-y-4 flex-1">
-                    <h3 className="text-sm font-bold text-cream-text-light uppercase tracking-wider flex items-center gap-2 ml-1">
+                <div className="space-y-4">
+                    <h3 className="text-xs md:text-sm font-bold text-cream-text-light uppercase tracking-wider flex items-center gap-2 ml-1">
                         <Shirt className="w-4 h-4" /> 智慧服裝 (Outfit)
                     </h3>
                     <div className="grid grid-cols-1 gap-2">
@@ -150,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 <div className={`p-2 rounded-lg ${settings.outfitType === opt.id ? "bg-cream-accent" : "bg-cream-bg"}`}>
                                     {opt.icon}
                                 </div>
-                                <span className={`font-bold text-sm ${settings.outfitType === opt.id ? "text-cream-text" : "text-cream-text/80"}`}>{opt.label}</span>
+                                <span className={`font-bold text-xs md:text-sm ${settings.outfitType === opt.id ? "text-cream-text" : "text-cream-text/80"}`}>{opt.label}</span>
                                 {settings.outfitType === opt.id && <Check className="ml-auto w-4 h-4 text-cream-text" />}
                             </button>
                         ))}
@@ -159,26 +159,28 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             {/* Generate Button */}
-            <button
-                onClick={onGenerate}
-                disabled={!hasImage || isGenerating}
-                className={`w-full h-20 rounded-full flex items-center justify-center gap-3 font-bold text-xl shadow-lg transition-all duration-300 transform ${!hasImage || isGenerating
-                    ? "bg-cream-border text-cream-text-light cursor-not-allowed opacity-50"
-                    : "bg-gradient-to-r from-cream-accent to-cream-accent-hover text-cream-text hover:shadow-orange-200/50 hover:-translate-y-1 active:scale-95 active:translate-y-0"
-                    }`}
-            >
-                {isGenerating ? (
-                    <>
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cream-text"></div>
-                        <span className="tracking-widest text-xs opacity-60">處理中... (約 3-5 分鐘)</span>
-                    </>
-                ) : (
-                    <>
-                        <Wand2 className="w-6 h-6" />
-                        <span className="tracking-wide">開始生成</span>
-                    </>
-                )}
-            </button>
+            <div className="mt-auto pt-4 shrink-0">
+                <button
+                    onClick={onGenerate}
+                    disabled={!hasImage || isGenerating}
+                    className={`w-full h-16 md:h-20 rounded-full flex items-center justify-center gap-3 font-bold text-lg md:text-xl shadow-lg transition-all duration-300 transform ${!hasImage || isGenerating
+                        ? "bg-cream-border text-cream-text-light cursor-not-allowed opacity-50"
+                        : "bg-gradient-to-r from-cream-accent to-cream-accent-hover text-cream-text hover:shadow-orange-200/50 hover:-translate-y-1 active:scale-95 active:translate-y-0"
+                        }`}
+                >
+                    {isGenerating ? (
+                        <>
+                            <div className="animate-spin rounded-full h-5 w-5 md:h-6 md:w-6 border-b-2 border-cream-text"></div>
+                            <span className="tracking-widest text-[10px] md:text-xs opacity-60">處理中...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Wand2 className="w-5 h-5 md:w-6 md:w-6" />
+                            <span className="tracking-wide">開始生成</span>
+                        </>
+                    )}
+                </button>
+            </div>
         </div>
     );
 };

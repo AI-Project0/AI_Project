@@ -1,8 +1,9 @@
 import sys
 import os
 
-# 確保當前路徑在 Python 搜尋路徑中
+# 確保當前路徑與 backend 路徑在 Python 搜尋路徑中
 sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), "backend"))
 
 print("🔍 開始診斷後端程式...")
 print(f"📂 當前工作目錄: {os.getcwd()}")

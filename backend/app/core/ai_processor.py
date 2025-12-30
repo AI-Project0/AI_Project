@@ -78,11 +78,15 @@ class AIProcessor:
             # Use DPMSolver for faster inference (20-30 steps)
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
             
-            self.pipe.to(self.device)
             if self.device == "cuda":
-                self.pipe.enable_attention_slicing() # Optimize memory
+                # For low VRAM GPUs (like RTX 3050 4GB), use model_cpu_offload 
+                # to only keep active components in VRAM. This prevents spilling into system RAM.
+                self.pipe.enable_model_cpu_offload()
+                self.pipe.enable_attention_slicing() # Further optimize memory
+            else:
+                self.pipe.to(self.device)
             
-            print("Models loaded successfully.")
+            print(f"Models loaded successfully onto {self.device} (CPU offload enabled if CUDA).")
         except Exception as e:
             print(f"Error loading models: {e}")
             raise e
@@ -189,6 +193,11 @@ class AIProcessor:
         # Return bytes
         output_buffer = io.BytesIO()
         final_img.save(output_buffer, format="PNG", quality=95)
+        
+        # Cleanup
+        if self.device == "cuda":
+            torch.cuda.empty_cache()
+            
         return output_buffer.getvalue()
 
     def _step_a_preprocessing(self, image: Image.Image, aspect_ratio: Tuple[int, int] = (35, 45)) -> Tuple[Image.Image, List]:
